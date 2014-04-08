@@ -180,34 +180,48 @@ def getTrackers(config):
 def getLogin(directory, fileName):
     """gets login parameters from list & directory passed on by config file"""
     params = {'description':'null'}
+    logins = []
+    
+    if ' ' in fileName:
+        fileNames = fileName.split(' ')
+        multiLogin = True
+    else:
+        fileNames = [fileName]
+        multiLogin = False
+        
     if directory == "null":
         directory = ''
-    print "Loading login file:", directory + fileName
-    try:
-        try: 
-            fileIn = open(directory+'/logins/' + fileName)
+        
+    
+    for fileName in fileNames:
+        print "Loading login file:", directory + fileName
+        try:
+            try: 
+                fileIn = open(directory+'/logins/' + fileName)
+            except:
+                fileIn = open(directory+fileName)
+            content = fileIn.readlines()
+            for item in content:
+                if ' = ' in item:
+                    while '  ' in item:
+                        item = item.replace('  ',' ')
+                    while '\n' in item:
+                        item = item.replace('\n','')
+                    line = item.split(' = ')
+                    try:
+                        line[1] = float(line[1])
+                        if line[1] == int(line[1]):
+                            line[1] = int(line[1])
+                    except:
+                        None
+                    params[line[0]] = line[1]
+            #for key,item in params.iteritems():
+            #    print '\t*', key,':', item
         except:
-            fileIn = open(directory+fileName)
-        content = fileIn.readlines()
-        for item in content:
-            if ' = ' in item:
-                while '  ' in item:
-                    item = item.replace('  ',' ')
-                while '\n' in item:
-                    item = item.replace('\n','')
-                line = item.split(' = ')
-                try:
-                    line[1] = float(line[1])
-                    if line[1] == int(line[1]):
-                        line[1] = int(line[1])
-                except:
-                    None
-                params[line[0]] = line[1]
-        #for key,item in params.iteritems():
-        #    print '\t*', key,':', item
-    except:
-        print "\tlogin file not found"
-    return params   
+            print "\tlogin file not found"   
+        logins.append(params)
+        
+    return logins  
                 
 
 
@@ -242,7 +256,7 @@ def getLocations(directory,locations):
         places[temp] = {'lat':location['lat'],'lon':location['lon'],'place':temp,'index':count,'query':line}
 	count += 1
     updateGeoPickle(geoCache,directory+pickleName)
-    return places
+    return {'place':places,'geoCache':geoCache}
     
         
 
@@ -259,7 +273,7 @@ def getRate(tracker,numLocations):
     secPerDay = 86400
     apiLimits = {'forecastio':1000}
     limit = apiLimits[tracker['source'].lower()]
-    rate = float(secPerDay)/limit
+    rate = float(secPerDay)/(limit*len(tracker['login']))
     return rate
          
         
@@ -300,12 +314,15 @@ def weatherGDILoad(gDocURL,directory):
         if len(str(row[0])) > 3 and row not in locations:
             locations.append(row[0])
         
-    geocoded = getLocations(directory, locations) 
+    temp = getLocations(directory, locations) 
+    geocoded = temp['places']
+    geoCache = temp['geoCache']
+    
     print; print  
     for key,tracker in trackers.iteritems():
         trackers[key]['runDelay'] = getDelay(tracker,len(geocoded.keys()))
 
-    return {'trackers':trackers,'locations':geocoded}
+    return {'trackers':trackers,'locations':geocoded,'geoCache':geoCache}
     
     
 
