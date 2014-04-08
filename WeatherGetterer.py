@@ -5,6 +5,7 @@ import sys, os
 #import unicodedata
 #import smtplib
 import forecastio
+import random
 
 #from copy import deepcopy, copy
 #from geopy import geocoders
@@ -30,23 +31,21 @@ def pullOne(tracker,location,timing,number):
         if number == 'null':
             login = tracker['login'][0]['key']
         else:
-            login = tracker['login'][number%len(tracker['login'])]['key']
+            login = random.choice(tracker['login'])['key']
+            time.sleep(random.uniform(0,2))
             
         try:
             if timing != 'null':
                 weatherIn = forecastio.load_forecast(login, location['lat'], location['lon'], timing)  
             else:
                 weatherIn = forecastio.load_forecast(login, location['lat'], location['lon'])
-            
             pulledWeather = eval("weatherIn."+tracker['timing']) 
-            
             for valKey,value in values.iteritems():
                 try:
                     attribute = eval("pulledWeather."+value)
                     readValues[valKey] = attribute
                 except:
-                    None
-                    
+                    None   
             done = True
             
         except:
@@ -112,19 +111,19 @@ def getBleedScript(fileName,locations,backLimit):
         return script
         
     else:
-        fileOut = fileName.open(fileName,'w')
+        fileOut = open(fileName,'w')
         listed = locationsListed(locations)
         print locations.keys()
         startDay = datetime.datetime.now().replace(hour=12,minute=0,second=0)
         print "Generating bleed script", fileName
-        print "Starting on", startDay.strftime("%A %d"), 'at 1 query every', rate, 'seconds...'
+        print "Starting on", startDay.strftime("%A %d")
         for pos in listed:
             location = locations[pos]
             for day in range(backLimit):
                 timeString = str(startDay-datetime.timedelta(days=day))
                 query = location['query']+'---'+timeString
                 script.append(query)
-                fileOut.write(query)
+        fileOut.write('\n'.join(script))
         fileOut.close()
         print "Bleed script generation complete!"
         return script
@@ -142,58 +141,29 @@ def getQuery(line, geoCache):
 
 
 
-def bleedData(directory,tracker,locations,geoCache):
+def bleedData(directory,tracker,locations,geoCache,q):
     backLimit = 1000
     fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
     script = getBleedScript(fileName,locations,backLimit)
-    
-    print "Data-bleed initiated..."
     rate = getRate(tracker,len(locations))
+    print "Data-bleed initiated, rate= 1 query every",rate,'seconds'
+    
     count = 0
-    chunk = []
+    chunk = dict()
     for query in script:
         params = getQuery(query,geoCache)
-        weather,block = pullOne(tracker,params['place'],params['time'],'null')
-        chunk.append(block)
+        weather,block = pullOne(tracker,params['place'],params['time'],count)
+        chunk[count]=block
         count +=1
-        print block
-        writeCSV(directory+'bled/',tracker,{'locKey':block},'',True)
+        print "Pulling data for", params['place'], 'on', params['time'].strftime("%A %d")
         if count%5 == 0 or query == script[-1]:
             print "Pulling query", count, 'of', len(script)
             writeCSV(directory+'bled/',tracker,chunk,'',True)
-            chunk = []
+            chunk = dict()
             with open(fileName, 'w') as f:
-                f.write('\n'.join(lines[count:]))
+                f.write('\n'.join(script[count:]))
         time.sleep(rate)
     print "It finished.... it's finally over"
-
-        
-        
-        
-def bleedDataOld(directory,tracker,locations,q):
-    backLimit = 1000
-    fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
-    script = getBleedScript(fileName,listed,backLimit)
-    print "Data-bleed initiated..."
-    startDay = datetime.datetime.now().replace(hour=12,minute=0,second=0)
-    rate = getRate(tracker,len(locations))
-    print "Starting on", startDay.strftime("%A %d"), 'at 1 query every', rate, 'seconds...'
-    listed = locationsListed(locations)
-    for pos in listed:
-	location = locations[pos]
-	print locations.keys()
-        count = 0
-        for day in range(backLimit):
-            if count%5 == 0 or day == backLimit:
-                fileOut = open('bleedTracker.txt','a+b')
-                fileOut.write('Place: '+location['place']+'\tCount: '+str(count))
-            pullday = startDay-datetime.timedelta(days=day)
-            print "Pulling data for", location['place'], 'on', pullday.strftime("%A %d")
-            weather,block = pullOne(tracker,location,startDay-datetime.timedelta(days=day),'null')
-            print block
-            writeCSV(directory+'bled/',tracker,{'locKey':block},'',True)
-            time.sleep(rate)
-                
 
 
 
@@ -212,17 +182,20 @@ def noonForecast(directory,tracker,locations,q):
         for locKey,location in locations.iteritems():
             timeData[locKey] = {'ranMorning':False,'ranAfternoon':False,'offset':False,'runDay':'frunday spectacular','tillNoon':0,'observed':0} 
         
+        count = 0
         while not afternoonDone(timeData):
             if not morningDone(timeData):
                 for locKey,location in locations.iteritems():
                     if not timeData[locKey]['ranMorning']:
+                        
 
-                        morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,'null','null')
+                        morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,'null',count)
+                        count +=1
                         currentTime = morningStreams[locKey].currently().time
-                        #print currentTime
                         noonTime = currentTime.replace(hour= 12, minute=0, second=0)
 
-                        morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,noonTime,'null')
+                        morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,noonTime,count)
+                        count +=1
                         
                         if currentTime > noonTime:
                             afternoonBlocks[locKey] = morningBlocks[locKey]
@@ -243,7 +216,8 @@ def noonForecast(directory,tracker,locations,q):
                     del morningStreams[locKey]
                     noonTime = currentTime.replace(hour= 12, minute=0, second=0)
 
-                    afternoonStreams[locKey], afternoonBlocks[locKey] = pullOne(tracker,location,noonTime)
+                    afternoonStreams[locKey], afternoonBlocks[locKey] = pullOne(tracker,location,noonTime,count)
+                    count +=1
                     timeData[locKey]['ranAfternoon'] = True
             
             if not afternoonDone(timeData):

@@ -96,10 +96,10 @@ def getLocation(cfg,geoCache,cacheRef):
         loaded = geoCache[cacheRef]
         #print "DEBOOO: Found in geocache"        
         if loaded['lat'] != 'NaN' and loaded['lon'] != 'NaN' and loaded['place'] != 'NaN':
-            print "DEBOOO: Inboxed from memory", cacheRef
+            print "GEOCACHE: Inboxed from memory", cacheRef
             return loaded
  
-    print "DEBOOO: Looking up", cacheRef
+    print "GEOCACHE: Looking up", cacheRef
         
     if not hasCoords and not coordsWork:
         #lookup coords by location name
@@ -218,9 +218,9 @@ def getLogin(directory, fileName):
             #for key,item in params.iteritems():
             #    print '\t*', key,':', item
         except:
-            print "\tlogin file not found"   
-        logins.append(params)
-        
+            print "\tlogin file not found" 
+        print params  
+        logins.append(deepcopy(params))  
     return logins  
                 
 
@@ -315,7 +315,7 @@ def weatherGDILoad(gDocURL,directory):
             locations.append(row[0])
         
     temp = getLocations(directory, locations) 
-    geocoded = temp['places']
+    geocoded = temp['place']
     geoCache = temp['geoCache']
     
     print; print  
