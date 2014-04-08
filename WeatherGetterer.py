@@ -155,7 +155,7 @@ def bleedData(directory,tracker,locations,geoCache,q):
         weather,block = pullOne(tracker,params['place'],params['time'],count)
         chunk[count]=block
         count +=1
-        print "Pulling data for", params['place'], 'on', params['time'].strftime("%A %d")
+        print "Pulling data for", params['place']['place'], 'on', params['time'].strftime("%A %d")
         if count%25 == 0 or query == script[-1]:
             print "Pulling query", count, 'of', len(script)
             writeCSV(directory+'bled/',tracker,chunk,'',True)
