@@ -162,6 +162,8 @@ def bleedData(directory,tracker,locations,geoCache,q):
             chunk = dict()
             with open(fileName, 'w') as f:
                 f.write('\n'.join(script[count:]))
+            f.close()
+            time.sleep(2)
         time.sleep(rate)
     print "It finished.... it's finally over"
 
