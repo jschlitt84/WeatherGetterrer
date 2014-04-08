@@ -187,8 +187,6 @@ def noonForecast(directory,tracker,locations,q):
             if not morningDone(timeData):
                 for locKey,location in locations.iteritems():
                     if not timeData[locKey]['ranMorning']:
-                        
-
                         morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,'null',count)
                         count +=1
                         currentTime = morningStreams[locKey].currently().time
