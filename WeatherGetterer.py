@@ -26,8 +26,8 @@ def pullOne(tracker,location,timing,number):
     tries = 0
     done = False
     maxTries = 10
-    if number % 50 == 0:
-        print "running query", number, "for method", tracker['method']
+    #if number % 50 == 0:
+    #   print "running query", number, "for method", tracker['method']
     
     while not done and tries != maxTries:
         if number == 'null':
@@ -216,7 +216,7 @@ def noonForecast(directory,tracker,locations,q):
                             extraDays.append(pulledBlock)
                             count +=1
                             time.sleep(random.uniform(0,2))
-                            print "DEBOOO daysweep completed", locKey
+                        print "DEBOOO daysweep completed", locKey
                         
                         if currentTime > noonTime:
                             afternoonBlocks[locKey] = morningBlocks[locKey]
