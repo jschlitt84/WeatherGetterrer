@@ -196,7 +196,8 @@ def noonForecast(directory,tracker,locations,q):
         
         for locKey,location in locations.iteritems():
             timeData[locKey] = {'ranMorning':False,'ranAfternoon':False,'offset':False,'runDay':'frunday spectacular','tillNoon':0,'observed':0} 
-        
+        print daysAhead, daysBehind, daySweep
+        quit()
         count = 0
         while not afternoonDone(timeData):
             if not morningDone(timeData):
