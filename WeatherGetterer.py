@@ -106,6 +106,7 @@ def getBleedScript(fileName,locations,backLimit):
         print "Loading from previously generated bleedscript", fileName
         fileIn = open(fileName,'r')
         script = fileIn.readlines()
+        script = [line for line in script if line != '\n']
         fileIn.close()
         print "Loaded!"
         return script
