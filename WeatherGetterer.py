@@ -212,9 +212,10 @@ def noonForecast(directory,tracker,locations,q):
                         
                         for dayAhead in daySweep:
                             null, pulledBlock = pullOne(tracker,location,noonTime+datetime.timedelta(days=dayAhead),count)
-                            extraDays += pulledBlock
+                            extraDays.append(pulledBlock)
                             count +=1
                             time.sleep(random.uniform(0,2))
+                            print "DEBOOO daysweep completed", locKey
                         
                         if currentTime > noonTime:
                             afternoonBlocks[locKey] = morningBlocks[locKey]
