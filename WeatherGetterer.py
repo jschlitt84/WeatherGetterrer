@@ -214,6 +214,7 @@ def noonForecast(directory,tracker,locations,q):
                             null, pulledBlock = pullOne(tracker,location,noonTime+datetime.timedelta(days=dayAhead),count)
                             extraDays += pulledBlock
                             count +=1
+                            time.sleep(random.uniform(0,2))
                         
                         if currentTime > noonTime:
                             afternoonBlocks[locKey] = morningBlocks[locKey]
