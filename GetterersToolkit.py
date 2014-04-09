@@ -151,7 +151,7 @@ def getTrackers(config):
     "Pull set of experiments from GDI file"
     experiments = set()
     paramsOut = dict()
-    runKeys = ['source','delay','method','key','file','timing','getAll']
+    runKeys = ['source','delay','method','key','file','timing','getAll','daysAhead','daysBehind']
     for line in config:
         experiments.add(line[0].split('.')[0])
     experiments = list(experiments)
@@ -159,7 +159,7 @@ def getTrackers(config):
     for item in experiments:
         dictOut = {'method':'max daily','file':'weatherOut.csv',
                     'source':'forecastio','delay':0,'timing':'currently()',
-                    'getAll':False,'values':dict()}
+                    'getAll':False,'values':dict(), 'daysAhead':3,'daysBehind':0}
         for line in config:
             temp = line[0].split('.')
             if temp[0] == item:

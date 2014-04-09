@@ -26,6 +26,8 @@ def pullOne(tracker,location,timing,number):
     tries = 0
     done = False
     maxTries = 10
+    if number % 50 == 0:
+        print "running query", number, "for method", tracker['method']
     
     while not done and tries != maxTries:
         if number == 'null':
@@ -49,9 +51,14 @@ def pullOne(tracker,location,timing,number):
             done = True
             
         except:
-            print "Weather pull", tries, "failed, will sleep for 5 minutes and try again"
-            tries += 1
-            time.sleep(300)
+            if len(tracker['login'])>1:
+                print "Weather pull", tries, "failed, will sleep 30 seconds and retry with alternate key"
+                tries += 1
+                time.sleep(30)
+            else:
+                print "Weather pull", tries, "failed, will sleep for 5 minutes and try again"
+                tries += 1
+                time.sleep(300)
     
     if tries == maxTries:
         weatherIn = 'null'
@@ -179,6 +186,11 @@ def noonForecast(directory,tracker,locations,q):
         morningBlocks = dict()
         afternoonBlocks = dict()
         wroteMorning = False
+        daysAhead = int(tracker['daysAhead'])
+        daysBehind = int(tracker['daysBehind'])
+        daySweep = range(daysBehind,daysAhead+1) 
+        daySweep = [day for day in daySweep if day != 0]
+        extraDays = []
         
         startDay = datetime.datetime.now().strftime('%A')
         
@@ -198,6 +210,11 @@ def noonForecast(directory,tracker,locations,q):
                         morningStreams[locKey], morningBlocks[locKey] = pullOne(tracker,location,noonTime,count)
                         count +=1
                         
+                        for dayAhead in daySweep:
+                            null, pulledBlock = pullOne(tracker,location,noonTime+datetime.timedelta(days=dayAhead),count)
+                            extraDays += pulledBlock
+                            count +=1
+                        
                         if currentTime > noonTime:
                             afternoonBlocks[locKey] = morningBlocks[locKey]
                             timeData[locKey]['ranAfternoon'] = True
@@ -209,6 +226,9 @@ def noonForecast(directory,tracker,locations,q):
             if not wroteMorning:
                 writeCSV(directory+'morningforecast/',tracker,morningBlocks,'Morn',False)
                 del morningBlocks
+                if daySweep != []:
+                    writeCSV(directory+'morningforecast/',tracker,extraDays,'Morn',False)
+                    del extraDays
                 wroteMorning = True
                 
             for locKey,location in locations.iteritems():
