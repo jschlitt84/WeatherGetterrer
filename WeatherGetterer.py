@@ -186,18 +186,16 @@ def noonForecast(directory,tracker,locations,q):
         morningBlocks = dict()
         afternoonBlocks = dict()
         wroteMorning = False
-        daysAhead = int(tracker['daysAhead'])
-        daysBehind = int(tracker['daysBehind'])
+        daysAhead = abs(int(tracker['daysAhead']))
+        daysBehind = -abs(int(tracker['daysBehind']))
         daySweep = range(daysBehind,daysAhead+1) 
         daySweep = [day for day in daySweep if day != 0]
-        extraDays = []
+        extraDays = dict()
         
         startDay = datetime.datetime.now().strftime('%A')
         
         for locKey,location in locations.iteritems():
             timeData[locKey] = {'ranMorning':False,'ranAfternoon':False,'offset':False,'runDay':'frunday spectacular','tillNoon':0,'observed':0} 
-        print daysAhead, daysBehind, daySweep
-        quit()
         count = 0
         while not afternoonDone(timeData):
             if not morningDone(timeData):
@@ -213,7 +211,7 @@ def noonForecast(directory,tracker,locations,q):
                         
                         for dayAhead in daySweep:
                             null, pulledBlock = pullOne(tracker,location,noonTime+datetime.timedelta(days=dayAhead),count)
-                            extraDays.append(pulledBlock)
+                            extraDays[count] = deepcopy(pulledBlock)
                             count +=1
                             time.sleep(random.uniform(0,2))
                         print "DEBOOO daysweep completed", locKey
@@ -230,7 +228,7 @@ def noonForecast(directory,tracker,locations,q):
                 writeCSV(directory+'morningforecast/',tracker,morningBlocks,'Morn',False)
                 del morningBlocks
                 if daySweep != []:
-                    writeCSV(directory+'morningforecast/',tracker,extraDays,'Morn',False)
+                    writeCSV(directory+'morningforecast/',tracker,extraDays,'Morn',True)
                     del extraDays
                 wroteMorning = True
                 
