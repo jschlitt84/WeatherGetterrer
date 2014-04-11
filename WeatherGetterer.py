@@ -7,13 +7,33 @@ import sys, os
 import forecastio
 import random
 
-#from copy import deepcopy, copy
+from copy import deepcopy, copy
 #from geopy import geocoders
 from dateutil import parser
 from multiprocessing import Process, Queue, cpu_count, Manager
 
 import gDocsImport as gd
 from GetterersToolkit import *
+
+
+def mergeOutPuts(tracker,directoryOut):
+    collected = []
+    for directory in tracker['merge']:
+        fileIn = open(directory)
+        csv = fileIn.readlines()
+        csv = [line.replace('\n','') for line in csv if line != '\n']
+        collected.append(deepcopy(csv))
+    merged = collected[0]
+    for collection in collected[1:]:
+        merged += collection[1:]
+    outFile = directoryOut + 'MergedData' + tracker['file']
+    print "Writing merged daily data to", outFile
+    with open(outFile, 'w') as f:
+        f.write('\n'.join(merged))
+        f.close()
+    time.sleep(3)
+    print "Write Complete"
+
 
 
 
@@ -230,6 +250,8 @@ def noonForecast(directory,tracker,locations,q):
                 if daySweep != []:
                     writeCSV(directory+'morningforecast/',tracker,extraDays,'Morn',True)
                     del extraDays
+                if tracker['merge'] != 'null':
+                    mergeOutPuts(tracker,directory)
                 wroteMorning = True
                 
             for locKey,location in locations.iteritems():

@@ -151,7 +151,7 @@ def getTrackers(config):
     "Pull set of experiments from GDI file"
     experiments = set()
     paramsOut = dict()
-    runKeys = ['source','delay','method','key','file','timing','getAll','daysAhead','daysBehind']
+    runKeys = ['source','delay','method','key','file','timing','getAll','daysAhead','daysBehind','merge']
     for line in config:
         experiments.add(line[0].split('.')[0])
     experiments = list(experiments)
@@ -159,12 +159,16 @@ def getTrackers(config):
     for item in experiments:
         dictOut = {'method':'max daily','file':'weatherOut.csv',
                     'source':'forecastio','delay':0,'timing':'currently()',
-                    'getAll':False,'values':dict(), 'daysAhead':3,'daysBehind':0}
+                    'getAll':False,'values':dict(), 'daysAhead':3,'daysBehind':0,
+                    'merge':'null'}
         for line in config:
             temp = line[0].split('.')
             if temp[0] == item:
                 if temp[1] in runKeys:
-                    dictOut[temp[1]] = checkBool(line[1])
+                    if temp[1] == 'merge' or temp[1] == 'key':
+                        dictOut[temp[1]] = [entry for entry in line[1:] if len(entry)>3]
+                    else:
+                        dictOut[temp[1]] = checkBool(line[1])
                 else:
                     dictOut['values'][temp[1]] = checkBool(line[1])
         if dictOut['getAll']:
@@ -177,17 +181,17 @@ def getTrackers(config):
     
     
     
-def getLogin(directory, fileName):
+def getLogin(directory, fileNames):
     """gets login parameters from list & directory passed on by config file"""
     params = {'description':'null'}
     logins = []
     
-    if ' ' in fileName:
+    """if ' ' in fileName:
         fileNames = fileName.split(' ')
         multiLogin = True
     else:
         fileNames = [fileName]
-        multiLogin = False
+        multiLogin = False"""
         
     if directory == "null":
         directory = ''
