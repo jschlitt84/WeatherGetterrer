@@ -236,10 +236,10 @@ def getLogin(directory, fileNames):
                     params[line[0]] = line[1]
             #for key,item in params.iteritems():
             #    print '\t*', key,':', item
+            logins.append(deepcopy(params)) 
         except:
-            print "\tlogin file not found" 
-        print params  
-        logins.append(deepcopy(params))  
+            print "\tlogin file not found"
+        print params           
     return logins  
                 
 

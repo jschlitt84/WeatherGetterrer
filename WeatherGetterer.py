@@ -177,6 +177,7 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
     oldData = [entry for entry in oldData if entry['time'] != 'NaN']
     missing = [entry for entry in oldData if entry['temperature'] == 'NaN']
     random.shuffle(missing)
+    print "Found", len(missing), "missread entries..."
     missing = missing[0:tracker['checkLimit']]
     
     for missed in missing:
@@ -200,6 +201,8 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
     newData = [kept(matched(found(places,entry['place']),found(times,parser.parse(str(entry['time'])))),entry,chunk) for entry in oldData]
             
     writeCSV(directory+'bled/',tracker,newData,'',False)
+    time.sleep(3)
+    updateGeoPickle(geoCache,directory+pickleName)
     
     
     
@@ -218,6 +221,7 @@ def bleedData(directory,tracker,locations,geoCache,q):
             print "Checking for historic data"
             checkOld(tracker,directory,directory+'bled/'+tracker['file'],geoCache,rate)
             print "Finished historic data search"
+            time.sleep(2)
             
         params = getQuery(query,geoCache)
         weather,block = pullOne(tracker,params['place'],params['time'],count)
