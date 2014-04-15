@@ -122,8 +122,8 @@ def locationsListed(locations):
 	for key,item in locations.iteritems():
 		listed[item['index']] = stripUnicode(item['place'])
 	return listed
-		
-
+	    		
+	    		
 
 
 def getBleedScript(fileName,locations,backLimit):
@@ -169,6 +169,16 @@ def getQuery(line, geoCache):
 
 
 
+def checkOld(tracker,directory,fileName):
+    oldData = csv.DictReader(open(fileName, 'rb'), delimiter=',')
+    missing = [entry for entry in oldData if oldData['temperature'] == 'NaN']
+    print len(missing)
+    print oldData[0:5]
+    quit()
+    
+    
+    
+
 def bleedData(directory,tracker,locations,geoCache,q):
     backLimit = 1000
     fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
@@ -179,6 +189,10 @@ def bleedData(directory,tracker,locations,geoCache,q):
     count = 0
     chunk = dict()
     for query in script:
+        if tracker['checkMissing'] != 0 and count % tracker['checkMissing'] == 0:
+            print "Checking for missing data"
+            checkOld(tracker,directory,fileName)
+            script = getBleedScript(fileName,locations,backLimit)
         params = getQuery(query,geoCache)
         weather,block = pullOne(tracker,params['place'],params['time'],count)
         chunk[count]=block
