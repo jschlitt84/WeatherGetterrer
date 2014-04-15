@@ -41,13 +41,13 @@ def mergeOutPuts(tracker,directoryOut):
 def pullOne(tracker,location,timing,number):
     readValues = dict()
     values = tracker['values']
+    if type(timing) is str:
+        timing = parser.parse(timing)
     row = {'place':location['place'],'lat':location['lat'],'lon':location['lon']}
     
     tries = 0
     done = False
     maxTries = 10
-    #if number % 50 == 0:
-    #   print "running query", number, "for method", tracker['method']
     
     while not done and tries != maxTries:
         if number == 'null':
@@ -169,12 +169,37 @@ def getQuery(line, geoCache):
 
 
 
-def checkOld(tracker,directory,fileName):
-    oldData = csv.DictReader(open(fileName, 'rb'), delimiter=',')
-    missing = [entry for entry in oldData if oldData['temperature'] == 'NaN']
-    print len(missing)
-    print oldData[0:5]
-    quit()
+def checkOld(tracker,directory,fileName,geoCache,rate):
+    count = 0
+    chunk = dict()
+    
+    oldData = list(csv.DictReader(open(fileName, 'rb'), delimiter=','))
+    oldData = [entry for entry in oldData if entry['time'] != 'NaN']
+    missing = [entry for entry in oldData if entry['temperature'] == 'NaN']
+    random.shuffle(missing)
+    missing = missing[0:tracker['checkLimit']]
+    
+    for missed in missing:
+        count += 1
+        missedPlace = getLocation(dict(),geoCache,missed['place'])
+        timing = parser.parse(missed['time'])
+        weather,block = pullOne(tracker,missedPlace,timing,count)
+        chunk[count]=block
+        time.sleep(rate)
+
+    chunk = [entry for key,entry in chunk.iteritems() if entry['temperature'] != 'NaN']
+    places = []; times = []
+    for entry in chunk:
+        places.append(str(entry['place']))
+        times.append(entry['time'])
+        
+    found = lambda values,value: [i for i, entry in enumerate(values) if entry == value]
+    matched = lambda list1, list2: list(set(list1).intersection(set(list2)))
+    kept = lambda combined, entry, collected: entry if combined == [] else collected[combined[0]]
+    
+    newData = [kept(matched(found(places,entry['place']),found(times,parser.parse(str(entry['time'])))),entry,chunk) for entry in oldData]
+            
+    writeCSV(directory+'bled/',tracker,newData,'',False)
     
     
     
@@ -190,9 +215,10 @@ def bleedData(directory,tracker,locations,geoCache,q):
     chunk = dict()
     for query in script:
         if tracker['checkMissing'] != 0 and count % tracker['checkMissing'] == 0:
-            print "Checking for missing data"
-            checkOld(tracker,directory,fileName)
-            script = getBleedScript(fileName,locations,backLimit)
+            print "Checking for historic data"
+            checkOld(tracker,directory,directory+'bled/'+tracker['file'],geoCache,rate)
+            print "Finished historic data search"
+            
         params = getQuery(query,geoCache)
         weather,block = pullOne(tracker,params['place'],params['time'],count)
         chunk[count]=block

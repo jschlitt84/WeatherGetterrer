@@ -145,6 +145,21 @@ def checkBool(text):
         elif text.lower() == 'true':
             return True
     return text
+    
+def checkType(text):
+    if type(text) is str:
+        if text.lower() == 'false':
+            return False
+        elif text.lower() == 'true':
+            return True
+        else:
+            try:
+                if float(text) == int(text):
+                    return int(text)
+                else:
+                    return float(text)
+            except:
+                return text
         
                 
 def getTrackers(config):
@@ -168,9 +183,9 @@ def getTrackers(config):
                     if temp[1] == 'merge' or temp[1] == 'key':
                         dictOut[temp[1]] = [entry for entry in line[1:] if len(entry)>3]
                     else:
-                        dictOut[temp[1]] = checkBool(line[1])
+                        dictOut[temp[1]] = checkType(line[1])
                 else:
-                    dictOut['values'][temp[1]] = checkBool(line[1])
+                    dictOut['values'][temp[1]] = checkType(line[1])
         if dictOut['getAll']:
             temp = allValues[dictOut['source']]
             for key in temp:
@@ -349,7 +364,7 @@ def writeCSV(directory, tracker, collectedContent, prefix, append):
     if type(collectedContent) is list:
         temp = dict()
         for line in collectedContent:
-            temp[line['place']]=line
+            temp[line['place']+str(line['time'])]=line
         collectedContent = temp
             
     for key in collectedContent.keys():
