@@ -41,7 +41,7 @@ def mergeOutPuts(tracker,directoryOut):
 def pullOne(tracker,location,timing,number):
     readValues = dict()
     values = tracker['values']
-    if type(timing) is str:
+    if type(timing) is str and timing != 'null':
         timing = parser.parse(timing)
     row = {'place':location['place'],'lat':location['lat'],'lon':location['lon']}
     
@@ -228,7 +228,7 @@ def bleedData(directory,tracker,locations,geoCache,q):
         chunk[count]=block
         count +=1
         print "Pulling data for", params['place']['place'], 'on', params['time'].strftime("%A %d")
-        if count%25 == 0 or query == script[-1]:
+        if count%100 == 0 or query == script[-1]:
             print "Pulling query", count, 'of', len(script)
             writeCSV(directory+'bled/',tracker,chunk,'',True)
             chunk = dict()
