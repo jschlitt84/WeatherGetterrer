@@ -43,6 +43,8 @@ def pullOne(tracker,location,timing,number):
     values = tracker['values']
     if type(timing) is str and timing != 'null':
         timing = parser.parse(timing)
+    else:
+        timing = datetime.datetime.now()
     row = {'place':location['place'],'lat':location['lat'],'lon':location['lon']}
     
     tries = 0
@@ -316,6 +318,7 @@ def noonForecast(directory,tracker,locations,q):
         print "Sleeping until next day"
         while datetime.datetime.now().strftime('%A') == startDay:
             time.sleep(3600)
+            None
         print "New day started:", datetime.datetime.now().strftime('%A')
 
             
