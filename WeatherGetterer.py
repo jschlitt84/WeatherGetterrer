@@ -18,21 +18,29 @@ from GetterersToolkit import *
 
 def mergeOutPuts(tracker,directoryOut):
     collected = []
+    foundAny = False
     for directory in tracker['merge']:
-        fileIn = open(directory)
-        csv = fileIn.readlines()
-        csv = [line.replace('\n','') for line in csv if line != '\n']
-        collected.append(deepcopy(csv))
-    merged = collected[0]
-    for collection in collected[1:]:
-        merged += collection[1:]
-    outFile = directoryOut + 'MergedData' + tracker['file']
-    print "Writing merged daily data to", outFile
-    with open(outFile, 'w') as f:
-        f.write('\n'.join(merged))
-        f.close()
-    time.sleep(3)
-    print "Write Complete"
+        try:
+            fileIn = open(directory)
+            csv = fileIn.readlines()
+            csv = [line.replace('\n','') for line in csv if line != '\n']
+            collected.append(deepcopy(csv))
+            foundAny = True
+        except:
+            print "File", directory, "does not (yet) exist, skipping..."
+    if foundAny:    
+        merged = collected[0]
+        for collection in collected[1:]:
+            merged += collection[1:]
+        outFile = directoryOut + 'MergedData' + tracker['file']
+        print "Writing merged daily data to", outFile
+        with open(outFile, 'w') as f:
+            f.write('\n'.join(merged))
+            f.close()
+        time.sleep(3)
+        print "Write Complete"
+    else:
+        print "Warning: no files ready to merge"
 
 
 
