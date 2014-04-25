@@ -183,37 +183,40 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
     count = 0
     chunk = dict()
     
-    oldData = list(csv.DictReader(open(fileName, 'rb'), delimiter=','))
-    oldData = [entry for entry in oldData if entry['time'] != 'NaN']
-    missing = [entry for entry in oldData if entry['temperature'] == 'NaN']
-    random.shuffle(missing)
-    print "Found", len(missing), "missread entries..."
-    missing = missing[0:tracker['checkLimit']]
-    
-    for missed in missing:
-        count += 1
-        missedPlace = getLocation(dict(),geoCache,missed['place'])
-        timing = parser.parse(missed['time'])
-        weather,block = pullOne(tracker,missedPlace,timing,count)
-        chunk[count]=block
-        time.sleep(rate)
-
-    chunk = [entry for key,entry in chunk.iteritems() if entry['temperature'] != 'NaN']
-    places = []; times = []
-    for entry in chunk:
-        places.append(str(entry['place']))
-        times.append(entry['time'])
+    try:
+        oldData = list(csv.DictReader(open(fileName, 'rb'), delimiter=','))
+        oldData = [entry for entry in oldData if entry['time'] != 'NaN']
+        missing = [entry for entry in oldData if entry['temperature'] == 'NaN']
+        random.shuffle(missing)
+        print "Found", len(missing), "missread entries..."
+        missing = missing[0:tracker['checkLimit']]
         
-    found = lambda values,value: [i for i, entry in enumerate(values) if entry == value]
-    matched = lambda list1, list2: list(set(list1).intersection(set(list2)))
-    kept = lambda combined, entry, collected: entry if combined == [] else collected[combined[0]]
+        for missed in missing:
+            count += 1
+            missedPlace = getLocation(dict(),geoCache,missed['place'])
+            timing = parser.parse(missed['time'])
+            weather,block = pullOne(tracker,missedPlace,timing,count)
+            chunk[count]=block
+            time.sleep(rate)
     
-    newData = [kept(matched(found(places,entry['place']),found(times,parser.parse(str(entry['time'])))),entry,chunk) for entry in oldData]
+        chunk = [entry for key,entry in chunk.iteritems() if entry['temperature'] != 'NaN']
+        places = []; times = []
+        for entry in chunk:
+            places.append(str(entry['place']))
+            times.append(entry['time'])
             
-    writeCSV(directory+'bled/',tracker,newData,'',False)
-    time.sleep(3)
-    updateGeoPickle(geoCache,directory+pickleName)
-    
+        found = lambda values,value: [i for i, entry in enumerate(values) if entry == value]
+        matched = lambda list1, list2: list(set(list1).intersection(set(list2)))
+        kept = lambda combined, entry, collected: entry if combined == [] else collected[combined[0]]
+        
+        newData = [kept(matched(found(places,entry['place']),found(times,parser.parse(str(entry['time'])))),entry,chunk) for entry in oldData]
+                
+        writeCSV(directory+'bled/',tracker,newData,'',False)
+        time.sleep(3)
+        updateGeoPickle(geoCache,directory+pickleName)
+    except:
+        print "No old data to error check, skipping..."
+        
     
     
 
