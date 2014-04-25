@@ -43,7 +43,7 @@ def pullOne(tracker,location,timing,number):
     values = tracker['values']
     if type(timing) is str and timing != 'null':
         timing = parser.parse(timing)
-    else:
+    elif timing == 'null':
         timing = datetime.datetime.now()
     row = {'place':location['place'],'lat':location['lat'],'lon':location['lon']}
     
@@ -210,7 +210,7 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
     
 
 def bleedData(directory,tracker,locations,geoCache,q):
-    backLimit = 1000
+    backLimit = tracker['daysBack']
     fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
     script = getBleedScript(fileName,locations,backLimit)
     rate = getRate(tracker,len(locations))
