@@ -303,6 +303,9 @@ def noonForecast(directory,tracker,locations,q):
                         
             if not wroteMorning:
                 writeCSV(directory+'morningforecast/',tracker,morningBlocks,'Morn',False)
+                if tracker['keepOld']:
+                    dateRecorded = datetime.datetime.now().strftime("%m%d%y")
+                    writeCSV(directory+'priorforecasts/',tracker,morningBlocks,dateRecorded,False)
                 del morningBlocks
                 if daySweep != []:
                     writeCSV(directory+'morningforecast/',tracker,extraDays,'Morn',True)
