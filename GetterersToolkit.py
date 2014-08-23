@@ -146,6 +146,7 @@ def checkBool(text):
             return True
     return text
     
+    
 def checkType(text):
     if type(text) is str:
         if text.lower() == 'false':
@@ -178,7 +179,7 @@ def getTrackers(config):
                     'source':'forecastio','delay':0,'timing':'currently()',
                     'getAll':False,'values':dict(), 'daysAhead':3,'daysBehind':0,
                     'merge':'null','checkMissing':500,'checkLimit':50,
-                    'daysBack':1000,'keepOld':False}
+                    'daysBack':1000,'keepOld':False,'jump':1}
         for line in config:
             temp = line[0].split('.')
             if temp[0] == item:

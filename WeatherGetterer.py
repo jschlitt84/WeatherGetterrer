@@ -136,7 +136,7 @@ def locationsListed(locations):
 	    		
 
 
-def getBleedScript(fileName,locations,backLimit):
+def getBleedScript(fileName,locations,downLimit,upLimit,jump):
     #fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
     script = []
     if os.path.exists(fileName):
@@ -153,12 +153,13 @@ def getBleedScript(fileName,locations,backLimit):
         listed = locationsListed(locations)
         print locations.keys()
         startDay = datetime.datetime.now().replace(hour=12,minute=0,second=0)
+        upDay = startDay + datetime.timedelta(days=upLimit)
         print "Generating bleed script", fileName
         print "Starting on", startDay.strftime("%A %d")
         for pos in listed:
             location = locations[pos]
-            for day in range(backLimit):
-                timeString = str(startDay-datetime.timedelta(days=day))
+            for day in range(0,downLimit+upLimit,jump):
+                timeString = str(upDay-datetime.timedelta(days=day))
                 query = location['query']+'---'+timeString
                 script.append(query)
         fileOut.write('\n'.join(script))
@@ -221,9 +222,8 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
     
 
 def bleedData(directory,tracker,locations,geoCache,q):
-    backLimit = tracker['daysBack']
     fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
-    script = getBleedScript(fileName,locations,backLimit)
+    script = getBleedScript(fileName,locations,tracker['daysBack'], tracker['daysBack'], tracker['jump'])
     rate = getRate(tracker,len(locations))
     print "Data-bleed initiated, rate= 1 query every",rate,'seconds'
     
