@@ -292,7 +292,7 @@ def getDelay(tracker,numLocations):
     return delay
     
     
-def getRate(tracker,numLocations):
+def getRate(tracker):
     secPerDay = 86400
     apiLimits = {'forecastio':1000}
     limit = apiLimits[tracker['source'].lower()]

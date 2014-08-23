@@ -224,7 +224,7 @@ def checkOld(tracker,directory,fileName,geoCache,rate):
 def bleedData(directory,tracker,locations,geoCache,q):
     fileName = directory+'BleedScript'+tracker['file'].replace('.csv','')+'.txt'
     script = getBleedScript(fileName,locations,tracker['daysBack'], tracker['daysBack'], tracker['jump'])
-    rate = getRate(tracker,len(locations))
+    rate = getRate(tracker)
     print "Data-bleed initiated, rate= 1 query every",rate,'seconds'
     
     count = 0
