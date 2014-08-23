@@ -169,7 +169,7 @@ def getTrackers(config):
     paramsOut = dict()
     runKeys = ['source','delay','method','key','file','timing','getAll',
                 'daysAhead','daysBehind','merge','checkMissing','checkLimit',
-                'daysBack','deboo','keepOld']
+                'daysBack','deboo','keepOld','jump']
     for line in config:
         experiments.add(line[0].split('.')[0])
     experiments = list(experiments)
